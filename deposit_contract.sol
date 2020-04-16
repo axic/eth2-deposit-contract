@@ -4,15 +4,15 @@ pragma solidity ^0.6.0;
 interface IDepositContract {
     event DepositEvent(
         bytes pubkey,
-        bytes withdrawal_credentials,
-        bytes amount,
+        bytes32 withdrawal_credentials,
+        bytes8 amount,
         bytes signature,
-        bytes index
+        bytes8 index
     );
 
     function deposit(
         bytes calldata pubkey,
-        bytes calldata withdrawal_credentials,
+        bytes32 withdrawal_credentials,
         bytes calldata signature,
         bytes32 deposit_data_root
     ) external payable;
@@ -30,7 +30,6 @@ contract DepositContract is IDepositContract {
     uint constant DEPOSIT_CONTRACT_TREE_DEPTH = 32;
     uint constant MAX_DEPOSIT_COUNT = 4294967295; // 2**DEPOSIT_CONTRACT_TREE_DEPTH - 1
     uint constant PUBKEY_LENGTH = 48; // bytes
-    uint constant WITHDRAWAL_CREDENTIALS_LENGTH = 32; // bytes
     uint constant SIGNATURE_LENGTH = 96; // bytes
     uint constant AMOUNT_LENGTH = 8; // bytes
 
@@ -64,13 +63,13 @@ contract DepositContract is IDepositContract {
         ));
     }
 
-    function get_deposit_count() external view returns (bytes memory) {
+    function get_deposit_count() external view returns (bytes8) {
         return to_little_endian_64(uint64(deposit_count));
     }
 
     function deposit(
         bytes calldata pubkey,
-        bytes calldata withdrawal_credentials,
+        bytes32 withdrawal_credentials,
         bytes calldata signature,
         bytes32 deposit_data_root
     ) override external payable {
@@ -83,7 +82,6 @@ contract DepositContract is IDepositContract {
 
         // Length checks for safety
         require(pubkey.length == PUBKEY_LENGTH);
-        require(withdrawal_credentials.length == WITHDRAWAL_CREDENTIALS_LENGTH);
         require(signature.length == SIGNATURE_LENGTH);
 
         // FIXME: these are not the Vyper code, but should verify they are not needed
@@ -91,7 +89,7 @@ contract DepositContract is IDepositContract {
         // assert(deposit_count <= 2**64-1);
 
         // Emit `DepositEvent` log
-        bytes memory amount = to_little_endian_64(uint64(deposit_amount));
+        bytes8 amount = to_little_endian_64(uint64(deposit_amount));
         emit DepositEvent(
             pubkey,
             withdrawal_credentials,
@@ -130,16 +128,16 @@ contract DepositContract is IDepositContract {
         }
     }
 
-    function to_little_endian_64(uint64 value) internal pure returns (bytes memory ret) {
-        // Unrolled the loop here.
-        ret = new bytes(8);
-        ret[0] = bytes1(uint8(value & 0xff));
-        ret[1] = bytes1(uint8((value >> 8) & 0xff));
-        ret[2] = bytes1(uint8((value >> 16) & 0xff));
-        ret[3] = bytes1(uint8((value >> 24) & 0xff));
-        ret[4] = bytes1(uint8((value >> 32) & 0xff));
-        ret[5] = bytes1(uint8((value >> 40) & 0xff));
-        ret[6] = bytes1(uint8((value >> 48) & 0xff));
-        ret[7] = bytes1(uint8((value >> 56) & 0xff));
+    function to_little_endian_64(uint64 value) internal pure returns (bytes8 ret) {
+       ret = bytes8(value);
+       // bswap64
+       ret = (((ret & 0xff00000000000000) >> 56)
+            | ((ret & 0x00ff000000000000) >> 40)
+            | ((ret & 0x0000ff0000000000) >> 24)
+            | ((ret & 0x000000ff00000000) >> 8)
+            | ((ret & 0x00000000ff000000) << 8)
+            | ((ret & 0x0000000000ff0000) << 24)
+            | ((ret & 0x000000000000ff00) << 40)
+            | ((ret & 0x00000000000000ff) << 56));
     }
 }
