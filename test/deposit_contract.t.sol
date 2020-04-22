@@ -5,25 +5,15 @@ import "../lib/ds-test/src/test.sol";
 import "./vyper_setup.sol";
 import "../deposit_contract.sol";
 
-
-// notice that since vyper does not use STATICCALL
-// for precompile calls, we cannot let `get_deposit_root` be `pure`.
-contract DepositLike {
-  function get_deposit_root() public returns (bytes32) {}
-  function deposit(bytes calldata, bytes calldata, bytes calldata,bytes32)
-    external payable {}
-}
-
-
 contract DepositContractTest is DSTest {
-    DepositLike depositContract_sol;
-    DepositLike depositContract_vyp;
+    DepositContract depositContract_sol;
+    DepositContract depositContract_vyp;
     uint64 constant GWEI = 1000000000;
 
     function setUp() public {
         VyperSetup vyperSetup = new VyperSetup();
-        depositContract_vyp = DepositLike(vyperSetup.deployDeposit());
-        depositContract_sol = DepositLike(address(new DepositContract()));
+        depositContract_vyp = DepositContract(vyperSetup.deployDeposit());
+        depositContract_sol = new DepositContract();
     }
 
     // --- SUCCESS TESTS ---
@@ -85,7 +75,7 @@ contract DepositContractTest is DSTest {
 
     // --- HELPER FUNCTIONS ---
 
-    function deposit_in(DepositLike depositContract, bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one, bytes32 sig_two, bytes32 sig_three, uint64 amount) public {
+    function deposit_in(DepositContract depositContract, bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one, bytes32 sig_two, bytes32 sig_three, uint64 amount) public {
       if (amount >= 1000000000000000000) {
         bytes memory pubkey = abi.encodePacked(pubkey_one, pubkey_two);
         bytes memory withdrawal_credentials = abi.encodePacked(_withdrawal_credentials);
