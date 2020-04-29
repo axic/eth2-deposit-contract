@@ -36,7 +36,7 @@ contract DepositContract is IDepositContract {
     uint constant SIGNATURE_LENGTH = 96; // bytes
 
     bytes32[DEPOSIT_CONTRACT_TREE_DEPTH] branch;
-    uint256 deposit_count;
+    uint64 deposit_count;
 
     // TODO: use immutable for this
     bytes32[DEPOSIT_CONTRACT_TREE_DEPTH] zero_hashes;
@@ -49,7 +49,7 @@ contract DepositContract is IDepositContract {
 
     function get_deposit_root() override external view returns (bytes32) {
         bytes32 node;
-        uint size = deposit_count;
+        uint64 size = deposit_count;
         for (uint height = 0; height < DEPOSIT_CONTRACT_TREE_DEPTH; height++) {
             if ((size & 1) == 1)
                 node = sha256(abi.encodePacked(branch[height], node));
@@ -59,13 +59,13 @@ contract DepositContract is IDepositContract {
         }
         return sha256(abi.encodePacked(
             node,
-            to_little_endian_64(uint64(deposit_count)),
+            to_little_endian_64(deposit_count),
             bytes24(0)
         ));
     }
 
     function get_deposit_count() override external view returns (bytes memory) {
-        return to_little_endian_64(uint64(deposit_count));
+        return to_little_endian_64(deposit_count);
     }
 
     function deposit(
@@ -98,7 +98,7 @@ contract DepositContract is IDepositContract {
             withdrawal_credentials,
             amount,
             signature,
-            to_little_endian_64(uint64(deposit_count))
+            to_little_endian_64(deposit_count)
         );
 
         // Compute deposit data root (`DepositData` hash tree root)
