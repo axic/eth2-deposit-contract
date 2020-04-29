@@ -75,18 +75,18 @@ contract DepositContract is IDepositContract {
         bytes32 deposit_data_root
     ) override external payable {
         // Avoid overflowing the Merkle tree (and prevent edge case in computing `self.branch`)
-        require(deposit_count < MAX_DEPOSIT_COUNT);
+        require(deposit_count < MAX_DEPOSIT_COUNT, "DepositContract: merkle tree full");
 
         // Check deposit amount
-        require(msg.value >= 1 ether);
-        require(msg.value % GWEI == 0);
+        require(msg.value >= 1 ether, "DepositContract: deposit value too low");
+        require(msg.value % GWEI == 0, "DepositContract: deposit value not a multiple of gwei");
         uint deposit_amount = msg.value / GWEI;
 
 
         // Length checks for safety
-        require(pubkey.length == PUBKEY_LENGTH);
-        require(withdrawal_credentials.length == WITHDRAWAL_CREDENTIALS_LENGTH);
-        require(signature.length == SIGNATURE_LENGTH);
+        require(pubkey.length == PUBKEY_LENGTH, "DepositContract: invalid pubkey length");
+        require(withdrawal_credentials.length == WITHDRAWAL_CREDENTIALS_LENGTH, "DepositContract: invalid withdrawal_credentials length");
+        require(signature.length == SIGNATURE_LENGTH, "DepositContract: invalid signature length");
 
         // FIXME: these are not the Vyper code, but should verify they are not needed
         // assert(deposit_amount <= 2**64-1);
@@ -113,7 +113,7 @@ contract DepositContract is IDepositContract {
             sha256(abi.encodePacked(amount, bytes24(0), signature_root))
         ));
         // Verify computed and expected deposit data roots match
-        require(node == deposit_data_root);
+        require(node == deposit_data_root, "DepositContract: given node does not match computed deposit_data_root");
 
         // Add deposit data root to Merkle tree (update a single `branch` node)
         deposit_count += 1;
