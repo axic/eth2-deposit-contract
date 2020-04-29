@@ -30,19 +30,32 @@ contract DepositContractTest is DSTest {
     }
 
     // Generates 16 random deposits, insert them in both vyper and solidity version and compare get_deposit_root after each insertion
-    function test_16_deposits(bytes32[16] memory pubkey_one, bytes16[16] memory pubkey_two, bytes32[16] memory _withdrawal_credentials, bytes32[16] memory sig_one, bytes32[16] memory sig_two, bytes32[16] memory sig_three, uint64[16] memory amount) public {
+    function test_16_deposits(bytes32[16] memory pubkey_one, bytes16[16] memory pubkey_two, bytes32[16] memory _withdrawal_credentials,
+                              bytes32[16] memory sig_one, bytes32[16] memory sig_two, bytes32[16] memory sig_three, uint32[16] memory amount) public {
       for (uint i = 0; i < 16; i++) {
-        deposit_in(depositContract_sol, pubkey_one[i], pubkey_two[i], _withdrawal_credentials[i], sig_one[i], sig_two[i], sig_three[i], amount[i]);
-        deposit_in(depositContract_vyp, pubkey_one[i], pubkey_two[i], _withdrawal_credentials[i], sig_one[i], sig_two[i], sig_three[i], amount[i]);
-        assert(depositContract_sol.get_deposit_root() == depositContract_vyp.get_deposit_root());
-        assert(keccak256(abi.encodePacked(depositContract_sol.get_deposit_count())) == keccak256(abi.encodePacked(depositContract_vyp.get_deposit_count())));
+          // as of dcaa774, the solidity version is more restrictive than vyper and requires deposits to be divisible by GWEI
+          uint64 gweiamount = amount[i] * GWEI;
+          if (1 ether <= gweiamount) {
+            deposit_in(depositContract_sol, pubkey_one[i], pubkey_two[i], _withdrawal_credentials[i], sig_one[i], sig_two[i], sig_three[i], gweiamount);
+            deposit_in(depositContract_vyp, pubkey_one[i], pubkey_two[i], _withdrawal_credentials[i], sig_one[i], sig_two[i], sig_three[i], gweiamount);
+            assert(depositContract_sol.get_deposit_root() == depositContract_vyp.get_deposit_root());
+            assert(keccak256(abi.encodePacked(depositContract_sol.get_deposit_count())) == keccak256(abi.encodePacked(depositContract_vyp.get_deposit_count())));
+          }
       }
+    }
+
+    // The solidity contract fails when given a deposit which is not divisible by GWEI
+
+    function testFail_deposit_not_divisible_by_gwei(bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials,
+                                                    bytes32 sig_one, bytes32 sig_two, bytes32 sig_three) public {
+            deposit_in(depositContract_sol, pubkey_one, pubkey_two, _withdrawal_credentials, sig_one, sig_two, sig_three, 1 ether + 1);
     }
 
     // --- FAILURE TESTS ---
 
     // if the node is given randomly instead of as the ssz root, the chances of success are so unlikely that we can assert it to be false
-    function testFail_malformed_node_vyp(bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one, bytes32 sig_two, bytes32 sig_three, uint64 amount, bytes32 node) public {
+    function testFail_malformed_node_vyp(bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one,
+                                         bytes32 sig_two, bytes32 sig_three, uint64 amount, bytes32 node) public {
       bytes memory pubkey = abi.encodePacked(pubkey_one, pubkey_two);
       bytes memory withdrawal_credentials = abi.encodePacked(_withdrawal_credentials); //I wish just recasting to `bytes` would work..
       bytes memory signature = abi.encodePacked(sig_one, sig_two, sig_three);
@@ -50,7 +63,8 @@ contract DepositContractTest is DSTest {
     }
 
      // If the node is taken randomly instead of as the ssz root, the chances of success are so unlikely that we can assert it to be false
-    function testFail_malformed_node_sol(bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one, bytes32 sig_two, bytes32 sig_three, uint64 amount, bytes32 node) public {
+    function testFail_malformed_node_sol(bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one,
+                                         bytes32 sig_two, bytes32 sig_three, uint64 amount, bytes32 node) public {
       bytes memory pubkey = abi.encodePacked(pubkey_one, pubkey_two);
       bytes memory withdrawal_credentials = abi.encodePacked(_withdrawal_credentials);
       bytes memory signature = abi.encodePacked(sig_one, sig_two, sig_three);
@@ -77,13 +91,11 @@ contract DepositContractTest is DSTest {
     // --- HELPER FUNCTIONS ---
 
     function deposit_in(DepositContract depositContract, bytes32 pubkey_one, bytes16 pubkey_two, bytes32 _withdrawal_credentials, bytes32 sig_one, bytes32 sig_two, bytes32 sig_three, uint64 amount) public {
-      if (amount >= 1000000000000000000) {
         bytes memory pubkey = abi.encodePacked(pubkey_one, pubkey_two);
         bytes memory withdrawal_credentials = abi.encodePacked(_withdrawal_credentials);
         bytes memory signature = abi.encodePacked(sig_one, sig_two, sig_three);
         bytes32 node = encode_node(pubkey, withdrawal_credentials, signature, to_little_endian_64(amount / GWEI));
         depositContract.deposit.value(amount)(pubkey, withdrawal_credentials, signature, node);
-      }
     }
 
     function slice(bytes memory a, uint32 offset, uint32 size) pure internal returns (bytes memory result) {
