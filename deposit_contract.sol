@@ -90,7 +90,6 @@ contract DepositContract is IDepositContract {
 
         // FIXME: these are not the Vyper code, but should verify they are not needed
         // assert(deposit_amount <= 2**64-1);
-        // assert(deposit_count <= 2**64-1);
 
         // Emit `DepositEvent` log
         bytes memory amount = to_little_endian_64(uint64(deposit_amount));
