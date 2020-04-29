@@ -35,6 +35,7 @@ contract DepositContractTest is DSTest {
         deposit_in(depositContract_sol, pubkey_one[i], pubkey_two[i], _withdrawal_credentials[i], sig_one[i], sig_two[i], sig_three[i], amount[i]);
         deposit_in(depositContract_vyp, pubkey_one[i], pubkey_two[i], _withdrawal_credentials[i], sig_one[i], sig_two[i], sig_three[i], amount[i]);
         assert(depositContract_sol.get_deposit_root() == depositContract_vyp.get_deposit_root());
+        assert(keccak256(abi.encodePacked(depositContract_sol.get_deposit_count())) == keccak256(abi.encodePacked(depositContract_vyp.get_deposit_count())));
       }
     }
 
