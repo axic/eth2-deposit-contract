@@ -129,8 +129,7 @@ contract DepositContract is IDepositContract {
     }
 
     function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
-        // TODO: use IDepositContract.interfaceId here
-        return interfaceId == this.supportsInterface.selector || interfaceId == this.deposit.selector;
+        return interfaceId == this.supportsInterface.selector || interfaceId == type(IDepositContract).interfaceId;
     }
 
     function to_little_endian_64(uint64 value) internal pure returns (bytes memory ret) {
