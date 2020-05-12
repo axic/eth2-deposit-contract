@@ -82,14 +82,13 @@ contract DepositContract is IDepositContract {
         require(msg.value % GWEI == 0, "DepositContract: deposit value not a multiple of gwei");
         uint deposit_amount = msg.value / GWEI;
 
+        // Unlikely to ever occur in practice
+        require(deposit_amount < 2**64, "DepositContract: deposit too high");
 
         // Length checks for safety
         require(pubkey.length == PUBKEY_LENGTH, "DepositContract: invalid pubkey length");
         require(withdrawal_credentials.length == WITHDRAWAL_CREDENTIALS_LENGTH, "DepositContract: invalid withdrawal_credentials length");
         require(signature.length == SIGNATURE_LENGTH, "DepositContract: invalid signature length");
-
-        // FIXME: these are not the Vyper code, but should verify they are not needed
-        // assert(deposit_amount <= 2**64-1);
 
         // Emit `DepositEvent` log
         bytes memory amount = to_little_endian_64(uint64(deposit_amount));
