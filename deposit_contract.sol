@@ -31,6 +31,7 @@ contract DepositContract is IDepositContract {
 
     uint constant MIN_DEPOSIT_AMOUNT = 1000000000; // Gwei
     uint constant DEPOSIT_CONTRACT_TREE_DEPTH = 32;
+    // NOTE: this also ensures the value fits into 64-bits
     uint constant MAX_DEPOSIT_COUNT = 2**DEPOSIT_CONTRACT_TREE_DEPTH - 1;
     uint constant PUBKEY_LENGTH = 48; // bytes
     uint constant WITHDRAWAL_CREDENTIALS_LENGTH = 32; // bytes
@@ -87,9 +88,6 @@ contract DepositContract is IDepositContract {
         require(pubkey.length == PUBKEY_LENGTH);
         require(withdrawal_credentials.length == WITHDRAWAL_CREDENTIALS_LENGTH);
         require(signature.length == SIGNATURE_LENGTH);
-
-        // FIXME: these are not the Vyper code, but should verify they are not needed
-        // assert(deposit_count <= 2**64-1);
 
         // Emit `DepositEvent` log
         bytes memory amount = to_little_endian_64(uint64(deposit_amount));
