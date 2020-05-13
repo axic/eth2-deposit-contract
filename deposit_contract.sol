@@ -42,8 +42,8 @@ contract DepositContract is IDepositContract {
 
     bytes32[DEPOSIT_CONTRACT_TREE_DEPTH] zero_hashes;
 
-    // Compute hashes in empty sparse Merkle tree
     constructor() public {
+        // Compute hashes in empty sparse Merkle tree
         for (uint height = 0; height < DEPOSIT_CONTRACT_TREE_DEPTH - 1; height++)
             zero_hashes[height + 1] = sha256(abi.encodePacked(zero_hashes[height], zero_hashes[height]));
     }
@@ -75,7 +75,7 @@ contract DepositContract is IDepositContract {
         bytes calldata signature,
         bytes32 deposit_data_root
     ) override external payable {
-        // Avoid overflowing the Merkle tree (and prevent edge case in computing `self.branch`)
+        // Avoid overflowing the Merkle tree (and prevent edge case in computing `branch`)
         require(deposit_count < MAX_DEPOSIT_COUNT);
 
         // Check deposit amount
