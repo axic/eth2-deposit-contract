@@ -40,7 +40,6 @@ contract DepositContract is IDepositContract {
     bytes32[DEPOSIT_CONTRACT_TREE_DEPTH] branch;
     uint256 deposit_count;
 
-    // TODO: use immutable for this
     bytes32[DEPOSIT_CONTRACT_TREE_DEPTH] zero_hashes;
 
     // Compute hashes in empty sparse Merkle tree
