@@ -110,7 +110,7 @@ contract DepositContract is IDepositContract {
             sha256(abi.encodePacked(amount, bytes24(0), signature_root))
         ));
         // Verify computed and expected deposit data roots match
-        require(node == deposit_data_root, "DepositContract: given node does not match computed deposit_data_root");
+        require(node == deposit_data_root, "DepositContract: reconstructed DepositData does not match supplied deposit_data_root");
 
         // Add deposit data root to Merkle tree (update a single `branch` node)
         deposit_count += 1;
