@@ -33,14 +33,18 @@ jobs:
           name: Update python3
           command: |
             sudo apt-get update
-            sudo apt-get install -y python3-venv          
+            sudo apt-get install -y python3-venv
       - run:
-          name: Run eth2.0-specs tests
+          name: Install eth2.0-specs tests
           command: |
             git clone https://github.com/ethereum/eth2.0-specs
             cp -f /tmp/deposit_contract.json eth2.0-specs/deposit_contract/contracts/validator_registration.json
             cd eth2.0-specs
             make install_deposit_contract_tester
+      - run:
+          name: Run eth2.0-specs tests
+          command: |
+            cd eth2.0-specs
             make test_deposit_contract
 
   test:
