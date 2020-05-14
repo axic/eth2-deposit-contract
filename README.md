@@ -17,9 +17,9 @@ The motivation is to run the SMTChecker and the new Yul IR generator option (`--
 The Makefile currently compiles the code without optimisations. To enable optimisations add `--optimize` to the `solc` line.
 
 
-## Running randomzied `dapp` tests:
+## Running randomized `dapp` tests:
 
 Install the latest version of `dapp` by following the instructions at [dapp.tools](https://dapp.tools/). Then run
 ```sh
-make test -B
+make test
 ```

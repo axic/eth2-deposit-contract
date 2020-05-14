@@ -14,5 +14,5 @@ let dapptools = builtins.fetchGit {
   };
 in
 pkgs-for-dapp.mkShell {
-  buildInputs = [ pkgs-for-dapp.dapp ];
+  buildInputs = [ pkgs-for-dapp.dapp pkgs-for-dapp.solc pkgs-for-dapp.hevm ];
 }
