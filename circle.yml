@@ -14,8 +14,7 @@ jobs:
             sudo apt-get install solc
       - run:
           name: Compile the contract
-          command: |
-            make
+          command: make
       - run:
           name: Run eth2.0-specs tests
           command: |
@@ -25,7 +24,6 @@ jobs:
             cd eth2.0-specs
             make install_deposit_contract_tester
             make test_deposit_contract
-
       - persist_to_workspace:
           root: .
           paths:
