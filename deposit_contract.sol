@@ -29,11 +29,11 @@ interface IDepositContract {
     ) external payable;
 
     /// @notice Query the current deposit root hash.
-    /// @return root The deposit root hash.
+    /// @return The deposit root hash.
     function get_deposit_root() external view returns (bytes32);
 
     /// @notice Query the current deposit count.
-    /// @return count The deposit count encoded as a little endian 64-bit number.
+    /// @return The deposit count encoded as a little endian 64-bit number.
     function get_deposit_count() external view returns (bytes memory);
 }
 
