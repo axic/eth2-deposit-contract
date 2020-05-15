@@ -56,6 +56,7 @@ jobs:
       - run:
           name: Test the contract
           command: |
+            mkdir build
             cp -r /tmp/build/* build
             cp -r /tmp/lib/* lib
             nix-shell --command 'make test'
