@@ -14,5 +14,9 @@ compile: clean
 	@cat build/DepositContract.bin >> deposit_contract.json
 	@/bin/echo -n '"}' >> deposit_contract.json
 
+export DAPP_SKIP_BUILD:=1
+export DAPP_SRC:=.
+export DAPP_JSON:=build/combined.json
+
 test:
-	@DAPP_SKIP_BUILD=1 DAPP_SRC=. DAPP_JSON=build/combined.json dapp test -v --fuzz-runs 5
+	dapp test -v --fuzz-runs 5
