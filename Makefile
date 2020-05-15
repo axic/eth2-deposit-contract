@@ -1,7 +1,7 @@
 all: compile
 
 clean:
-	@rm -f DepositContract.abi DepositContract.bin IDepositContract.abi IDepositContract.bin deposit_contract.json
+	@rm -f DepositContract.abi DepositContract.bin IDepositContract.abi IDepositContract.bin ERC165.bin ERC165.abi deposit_contract.json
 	@rm -f DepositContractTest.abi DepositContractTest.bin
 	@rm -f VyperSetup.abi VyperSetup.bin
 	@rm -f DSTest.abi DSTest.bin
