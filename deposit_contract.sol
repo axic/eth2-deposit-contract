@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.6.0;
+pragma solidity 0.6.8;
 
 // This interface is designed to be compatible with the Vyper version.
 interface IDepositContract {
@@ -24,9 +24,20 @@ interface IDepositContract {
     function get_deposit_count() external view returns (bytes memory);
 }
 
+// Based on official specification in https://eips.ethereum.org/EIPS/eip-165
+interface ERC165 {
+    /// @notice Query if a contract implements an interface
+    /// @param interfaceId The interface identifier, as specified in ERC-165
+    /// @dev Interface identification is specified in ERC-165. This function
+    ///  uses less than 30,000 gas.
+    /// @return `true` if the contract implements `interfaceId` and
+    ///  `interfaceId` is not 0xffffffff, `false` otherwise
+    function supportsInterface(bytes4 interfaceId) external pure returns (bool);
+}
+
 // This is a rewrite of the Vyper Eth2.0 deposit contract in Solidity.
 // It tries to stay as close as possible to the original source code.
-contract DepositContract is IDepositContract {
+contract DepositContract is IDepositContract, ERC165 {
     uint constant GWEI = 1e9;
 
     uint constant DEPOSIT_CONTRACT_TREE_DEPTH = 32;
@@ -80,7 +91,7 @@ contract DepositContract is IDepositContract {
         require(msg.value >= 1 ether, "DepositContract: deposit value too low");
         require(msg.value % GWEI == 0, "DepositContract: deposit value not multiple of gwei");
         uint deposit_amount = msg.value / GWEI;
-        require(deposit_amount < 2**64, "DepositContract: deposit value too high");
+        require(deposit_amount <= type(uint64).max, "DepositContract: deposit value too high");
 
         // Emit `DepositEvent` log
         bytes memory amount = to_little_endian_64(uint64(deposit_amount));
@@ -95,8 +106,8 @@ contract DepositContract is IDepositContract {
         // Compute deposit data root (`DepositData` hash tree root)
         bytes32 pubkey_root = sha256(abi.encodePacked(pubkey, bytes16(0)));
         bytes32 signature_root = sha256(abi.encodePacked(
-            sha256(abi.encodePacked(bytes(signature[:64]))),
-            sha256(abi.encodePacked(bytes(signature[64:]), bytes32(0)))
+            sha256(abi.encodePacked(signature[:64])),
+            sha256(abi.encodePacked(signature[64:], bytes32(0)))
         ));
         bytes32 node = sha256(abi.encodePacked(
             sha256(abi.encodePacked(pubkey_root, withdrawal_credentials)),
@@ -123,6 +134,10 @@ contract DepositContract is IDepositContract {
         // As the loop should always end prematurely with the `return` statement,
         // this code should be unreachable. We assert `false` just to be safe.
         assert(false);
+    }
+
+    function supportsInterface(bytes4 interfaceId) override external pure returns (bool) {
+        return interfaceId == type(ERC165).interfaceId || interfaceId == type(IDepositContract).interfaceId;
     }
 
     function to_little_endian_64(uint64 value) internal pure returns (bytes memory ret) {
