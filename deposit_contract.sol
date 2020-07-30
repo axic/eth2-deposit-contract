@@ -9,7 +9,7 @@
 
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity 0.6.8;
+pragma solidity 0.6.11;
 
 // This interface is designed to be compatible with the Vyper version.
 /// @notice This is the Ethereum 2.0 deposit contract interface.
