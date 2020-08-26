@@ -2,7 +2,7 @@
 
 **This repository is archived and the project is now maintained within the [Eth2.0 specifications repository](https://github.com/ethereum/eth2.0-specs).**
 
-This is a port of the [Vyper Eth 2.0 deposit contract](https://github.com/ethereum/eth2.0-specs/blob/dev/deposit_contract/contracts/validator_registration.vy) to Solidity.
+This is a port of the [Vyper Eth 2.0 deposit contract](https://github.com/ethereum/eth2.0-specs/blob/v0.12.2/deposit_contract/contracts/validator_registration.vy) to Solidity.
 
 The original motivation was to run the SMTChecker and the new Yul IR generator option (`--ir`) in the compiler.
 
